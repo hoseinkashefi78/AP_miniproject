@@ -18,7 +18,8 @@ class Player:
         self.positions = [x, y]
         self.x_change = 0
         self.y_change = 0
-        
+        self.score = 0
+        self.shoots = []
     def move(self):
         self.positions[0] += self.x_change
         self.positions[1] += self.y_change
@@ -46,6 +47,15 @@ class Poppet:
 
 def shooting(player,poppet):
     if abs(player.positions[0] - poppet.positions[0]) <= 20 and abs(player.positions[1] - poppet.positions[1]) <= 20:
+        player.shoots.append(poppet.positions)
+        if len(player.shoots) < 2:
+            player.score += 1
+        else:
+            score = (sqrt((player.shoots[-1][0] - player.shoots[-2][0])**2 + (player.shoots[-1][1] - player.shoots[-2][1])**2))//100
+            if score == 0:
+                score +=1
+            player.score += score 
+        print(player.score)
         poppet.positions = []
         poppet.generate_positions()
 
@@ -54,6 +64,7 @@ pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Game")
+font = pygame.font.Font(None, 36)
 
 #images and musics
 icon = pygame.image.load('icon.png')
@@ -100,6 +111,9 @@ while running:
     poppet1.draw(screen)
     poppet2.draw(screen)
     poppet3.draw(screen)
+
+    score_text = font.render(f"Payer1 Score: {int(player1.score)}", True, (0, 0, 0))
+    screen.blit(score_text, (600, 20))
 
     pygame.display.update()
 
