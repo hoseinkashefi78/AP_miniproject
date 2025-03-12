@@ -32,7 +32,8 @@ class Player1(Player):
         super().__init__(filename, randint(0,750), randint(0,550))
 
 class Player2(Player):
-    pass
+    def __init__(self, filename):
+        super().__init__(filename, randint(0,750), randint(0,550))
 
 class Poppet:
     def __init__(self, filename , x, y):
@@ -70,11 +71,12 @@ font = pygame.font.Font(None, 36)
 icon = pygame.image.load('icon.png')
 pygame.display.set_icon(icon)
 player1 = Player1("focus.png")
+player2 = Player2("focus2.png")
 poppet1 = Poppet("dog.png" , randint(0,750), randint(0,550))
 poppet2 = Poppet("dog.png" , randint(0,750), randint(0,550))
 poppet3 = Poppet("dog.png" , randint(0,750), randint(0,550))
 
-pygame.mixer.music.load("kesafat.mp3")
+
 
 # game loop
 running = True
@@ -95,26 +97,48 @@ while running:
             if event.key == pygame.K_RIGHT:
                 player1.x_change = 0.2
             if event.key == pygame.K_RETURN:
+                pygame.mixer.music.load("kesafat.mp3")
                 pygame.mixer.music.play()
                 shooting(player1, poppet1)
                 shooting(player1, poppet2)
                 shooting(player1, poppet3)
+            if event.key == pygame.K_w:
+                player2.y_change = -0.2
+            if event.key == pygame.K_s:
+                player2.y_change = 0.2
+            if event.key == pygame.K_a:
+                player2.x_change = -0.2
+            if event.key == pygame.K_d:
+                player2.x_change = 0.2
+            if event.key == pygame.K_TAB:
+                pygame.mixer.music.load("bishor.mp3")
+                pygame.mixer.music.play()
+                shooting(player2, poppet1)
+                shooting(player2, poppet2)
+                shooting(player2, poppet3)
         if event.type == pygame.KEYUP:
             if event.key in [pygame.K_UP, pygame.K_DOWN]:
                 player1.y_change = 0
             if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                 player1.x_change = 0
+            if event.key in [pygame.K_w, pygame.K_s]:
+                player2.y_change = 0
+            if event.key in [pygame.K_a, pygame.K_d]:
+                player2.x_change = 0
+        
 
     player1.move()
-
+    player2.move()
     player1.draw(screen)
+    player2.draw(screen)
     poppet1.draw(screen)
     poppet2.draw(screen)
     poppet3.draw(screen)
 
-    score_text = font.render(f"Payer1 Score: {int(player1.score)}", True, (0, 0, 0))
-    screen.blit(score_text, (600, 20))
-
+    score1_text = font.render(f"Player1 Score: {int(player1.score)}", True, (0, 0, 0))
+    screen.blit(score1_text, (600, 20))
+    score2_text = font.render(f"Player2 Score: {int(player2.score)}", True, (0, 0, 0))
+    screen.blit(score2_text, (600, 45))
     pygame.display.update()
 
 pygame.quit()
