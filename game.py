@@ -21,6 +21,8 @@ class Player:
         self.y_change = 0
         self.score = 0
         self.shoots = []
+        self.freezed = False
+        self.freeze_end_time = 0
 
     def move(self):
         self.positions[0] += self.x_change
@@ -28,6 +30,13 @@ class Player:
 
     def draw(self, screen):
         screen.blit(self.image, (self.positions[0], self.positions[1]))
+    
+    def activatefreeze(self):
+        self.freezed = True
+        self.start_freeze_time = time.time()
+    def update(self):
+        if self.freezed and (time.time()-self.start_freeze_time) > 10 :
+            self.freezed = False
 
 class Player1(Player):
     def __init__(self, filename):
@@ -82,7 +91,14 @@ def shooting(player, poppet):
                 score += 1
             player.score += score
         print(player.score)
-        poppet.generate_positions()
+        poppet.generate_positions() 
+def ice(player, special, enemy):
+    if special and special.number == 1 and abs(player.positions[0] - special.positions[0]) <= 20 and abs(player.positions[1] - special.positions[1]) <= 20:
+        print("Ice hit!")
+        enemy.activatefreeze()
+        return None
+    return special
+
 
 pygame.init()
 pygame.mixer.init()
@@ -106,7 +122,7 @@ while running:
 
     current_time = time.time()
     if current_time - last_power_time >= 10:  
-        special = SpecialTarget(randint(1, 3))
+        special = SpecialTarget(randint(1,3))
         special.activate()
         last_power_time = current_time
 
@@ -115,34 +131,43 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                player1.y_change = -0.2
-            if event.key == pygame.K_DOWN:
-                player1.y_change = 0.2
-            if event.key == pygame.K_LEFT:
-                player1.x_change = -0.2
-            if event.key == pygame.K_RIGHT:
-                player1.x_change = 0.2
-            if event.key == pygame.K_RETURN:
-                pygame.mixer.music.load("kesafat.mp3")
-                pygame.mixer.music.play()
-                shooting(player1, poppet1)
-                shooting(player1, poppet2)
-                shooting(player1, poppet3)
-            if event.key == pygame.K_w:
-                player2.y_change = -0.2
-            if event.key == pygame.K_s:
-                player2.y_change = 0.2
-            if event.key == pygame.K_a:
-                player2.x_change = -0.2
-            if event.key == pygame.K_d:
-                player2.x_change = 0.2
-            if event.key == pygame.K_TAB:
-                pygame.mixer.music.load("bishor.mp3")
-                pygame.mixer.music.play()
-                shooting(player2, poppet1)
-                shooting(player2, poppet2)
-                shooting(player2, poppet3)
+            if not player1.freezed:
+                if event.key == pygame.K_UP:
+                    player1.y_change = -0.2
+                if event.key == pygame.K_DOWN:
+                    player1.y_change = 0.2
+                if event.key == pygame.K_LEFT:
+                    player1.x_change = -0.2
+                if event.key == pygame.K_RIGHT:
+                    player1.x_change = 0.2
+                if event.key == pygame.K_RETURN:
+                    pygame.mixer.music.load("kesafat.mp3")
+                    pygame.mixer.music.play()
+                    shooting(player1, poppet1)
+                    shooting(player1, poppet2)
+                    shooting(player1, poppet3)
+                    if special:
+                        if ice(player1,special,player2) == None :
+                            special = None
+            if not player2.freezed:
+                if event.key == pygame.K_w:
+                    player2.y_change = -0.2
+                if event.key == pygame.K_s:
+                    player2.y_change = 0.2
+                if event.key == pygame.K_a:
+                    player2.x_change = -0.2
+                if event.key == pygame.K_d:
+                    player2.x_change = 0.2
+                if event.key == pygame.K_TAB:
+                    pygame.mixer.music.load("bishor.mp3")
+                    pygame.mixer.music.play()
+                    shooting(player2, poppet1)
+                    shooting(player2, poppet2)
+                    shooting(player2, poppet3)
+                    if special:
+                        if ice(player2,special,player1) == None :
+                            special = None
+                     
 
         if event.type == pygame.KEYUP:
             if event.key in [pygame.K_UP, pygame.K_DOWN]:
@@ -153,9 +178,11 @@ while running:
                 player2.y_change = 0
             if event.key in [pygame.K_a, pygame.K_d]:
                 player2.x_change = 0
-
+    player1.update()
+    player2.update()
     player1.move()
     player2.move()
+
     player1.draw(screen)
     player2.draw(screen)
     poppet1.draw(screen)
