@@ -26,13 +26,19 @@ def draw_text(text, font, color, surface, x, y):
     textrect = textobj.get_rect()
     textrect.center = (x, y)
     surface.blit(textobj, textrect)
-
+ 
 def main_menu():
+    icon = pygame.image.load('icon.png')
+    pygame.display.set_icon(icon)
     selected = 0 
+    pygame.mixer.music.load("kharabkardi.mp3")
+    pygame.mixer.music.play()
     while True:
-        screen.fill(BLACK)
-        start_color = RED if selected == 0 else WHITE
-        exit_color = RED if selected == 1 else WHITE
+        screen.fill(WHITE)
+        golzar = Image("golzar.jpg",800,600).load()
+        screen.blit(golzar,(0,0))
+        start_color = RED if selected == 0 else BLACK
+        exit_color = RED if selected == 1 else BLACK
         draw_text("START", font, start_color, screen, WIDTH//2, HEIGHT//2)
         draw_text("EXIT", font, exit_color, screen, WIDTH//2, HEIGHT//2 + 100)
         
@@ -199,7 +205,7 @@ def game_loop():
     icon = pygame.image.load('icon.png')
     pygame.display.set_icon(icon)
     player1 = Player1("focus.png")
-    player2 = Player2("nothing.png")
+    player2 = Player2("focus2.png")
     poppet1 = Target("dog.png", randint(0, 750), randint(0, 550))
     poppet2 = Target("dog.png", randint(0, 750), randint(0, 550))
     poppet3 = Target("dog.png", randint(0, 750), randint(0, 550))
