@@ -26,7 +26,67 @@ def draw_text(text, font, color, surface, x, y):
     textrect = textobj.get_rect()
     textrect.center = (x, y)
     surface.blit(textobj, textrect)
- 
+
+users = {}
+
+def login_screen():
+    global users
+    current_player = 1
+    username = ""
+    password = ""
+    input_field = "username"
+    active_field = 1
+    error_message = ""
+
+    while True:
+        screen.fill(GRAY)
+
+        draw_text(f"Player {current_player} Login", font, BLACK, screen, WIDTH//2, HEIGHT//4)
+        draw_text("Username:", small_font, BLACK, screen, WIDTH//2 - 100, HEIGHT//2 - 50)
+        draw_text(username, small_font, RED if active_field == 1 else BLACK, screen, WIDTH//2 + 100, HEIGHT//2 - 50)
+        draw_text("Password:", small_font, BLACK, screen, WIDTH//2 - 100, HEIGHT//2 + 50)
+        draw_text(password, small_font, RED if active_field == 2 else BLACK, screen, WIDTH//2 + 100, HEIGHT//2 + 50)
+        draw_text(error_message, small_font, RED, screen, WIDTH//2, HEIGHT//2 + 150)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    active_field = 1
+                elif event.key == pygame.K_DOWN:
+                    active_field = 2
+                elif event.key == pygame.K_RETURN:
+                    if username and password:
+                        if current_player == 1:
+                            users[f"player{current_player}"] = {"username": username, "password": password}
+                            current_player = 2
+                            username = ""
+                            password = ""
+                            active_field = 1
+                            error_message = ""
+                        else:
+                            if username == users["player1"]["username"]:
+                                error_message = "Username already taken! Try again."
+                                username = ""
+                            else:
+                                users[f"player{current_player}"] = {"username": username, "password": password}
+                                print("Users registered:", users)
+                                return
+                elif event.key == pygame.K_BACKSPACE:
+                    if active_field == 1:
+                        username = username[:-1]
+                    else:
+                        password = password[:-1]
+                else:
+                    if active_field == 1:
+                        username += event.unicode
+                    else:
+                        password += event.unicode
+
+        pygame.display.update()
+
 def main_menu():
     icon = pygame.image.load('icon.png')
     pygame.display.set_icon(icon)
@@ -34,9 +94,9 @@ def main_menu():
     pygame.mixer.music.load("kharabkardi.mp3")
     pygame.mixer.music.play()
     while True:
-        screen.fill(WHITE)
-        golzar = Image("golzar.jpg",800,600).load()
-        screen.blit(golzar,(0,0))
+        screen.fill(GRAY)
+        golzar = Image("golzar.jpg", 800, 600).load()
+        screen.blit(golzar, (0, 0))
         start_color = RED if selected == 0 else BLACK
         exit_color = RED if selected == 1 else BLACK
         draw_text("START", font, start_color, screen, WIDTH//2, HEIGHT//2)
@@ -53,6 +113,7 @@ def main_menu():
                     selected = 1
                 elif event.key == pygame.K_RETURN:
                     if selected == 0:
+                        login_screen()
                         game_loop() 
                     elif selected == 1:
                         pygame.quit()
@@ -81,7 +142,7 @@ class Player:
         self.freezed = False
         self.freeze_end_time = 0
         self.hypnotized = False
-        self.hypnosis_count  = 0 
+        self.hypnosis_count = 0 
         self.bullets = 10
 
     def move(self):
@@ -97,11 +158,11 @@ class Player:
     def activatehypnosis(self):
         self.hypnotized = True
     def update(self):
-        if self.freezed :
-            if (time.time()-self.start_freeze_time) > 10 :
+        if self.freezed:
+            if (time.time() - self.start_freeze_time) > 10:
                 self.freezed = False
         if self.hypnotized:
-            if self.hypnosis_count == 3 :
+            if self.hypnosis_count == 3:
                 self.hypnotized = False
                 self.hypnosis_count = 0
 
@@ -109,24 +170,24 @@ class Player1(Player):
     def __init__(self, filename):
         super().__init__(filename, randint(0, 750), randint(0, 550))
         self.pointer = Image("circle.png", 10, 10).load()
-    def point (self , screen):  
-        if len(self.points) >= 1 :
+    def point(self, screen):  
+        if len(self.points) >= 1:
             screen.blit(self.pointer, (self.points[-1][0], self.points[-1][1]))
-            if len(self.points) >= 2 :
+            if len(self.points) >= 2:
                 screen.blit(self.pointer, (self.points[-2][0], self.points[-2][1]))
-                if len(self.points) >= 3 :
+                if len(self.points) >= 3:
                     screen.blit(self.pointer, (self.points[-3][0], self.points[-3][1]))
 
 class Player2(Player):
     def __init__(self, filename):
         super().__init__(filename, randint(0, 750), randint(0, 550))
         self.pointer = Image("record.png", 10, 10).load()
-    def point (self , screen):  
-        if len(self.points) >= 1 :
+    def point(self, screen):  
+        if len(self.points) >= 1:
             screen.blit(self.pointer, (self.points[-1][0], self.points[-1][1]))
-            if len(self.points) >= 2 :
+            if len(self.points) >= 2:
                 screen.blit(self.pointer, (self.points[-2][0], self.points[-2][1]))
-                if len(self.points) >= 3 :
+                if len(self.points) >= 3:
                     screen.blit(self.pointer, (self.points[-3][0], self.points[-3][1]))
 
 class Target:
@@ -163,7 +224,7 @@ class SpecialTarget(Target):
             if time.time() - self.start_time >= 5:  
                 self.active = False
 
-def shooting(player, poppet , enemy):
+def shooting(player, poppet, enemy):
     if poppet.positions and abs(player.positions[0] - poppet.positions[0]) <= 20 and abs(player.positions[1] - poppet.positions[1]) <= 20:
         player.shoots.append(poppet.positions)
         if len(player.points) < 2:
@@ -172,7 +233,7 @@ def shooting(player, poppet , enemy):
             score = (sqrt((player.points[-1][0] - player.points[-2][0])**2 + (player.points[-1][1] - player.points[-2][1])**2)) // 100
             if score == 0:
                 score += 1
-            if player.hypnotized == True :
+            if player.hypnotized == True:
                 enemy.score += score
                 player.hypnosis_count += 1
             else:
@@ -221,7 +282,7 @@ def game_loop():
 
         current_time = time.time()
         if current_time - last_power_time >= 10:  
-            special = SpecialTarget(randint(1,3))
+            special = SpecialTarget(randint(1, 3))
             special.activate()
             last_power_time = current_time
 
@@ -242,20 +303,20 @@ def game_loop():
                     if event.key == pygame.K_RETURN:
                         pygame.mixer.music.load("kesafat.mp3")
                         pygame.mixer.music.play()
-                        if player1.bullets > 0 :
+                        if player1.bullets > 0:
                             p = copy.deepcopy(player1.positions)
-                            pp = [p[0] + 20 , p[1] + 20]
+                            pp = [p[0] + 20, p[1] + 20]
                             player1.points.append(pp)
-                            shooting(player1, poppet1 , player2)
-                            shooting(player1, poppet2 , player2)
-                            shooting(player1, poppet3 , player2)
+                            shooting(player1, poppet1, player2)
+                            shooting(player1, poppet2, player2)
+                            shooting(player1, poppet3, player2)
                             player1.bullets -= 1
                             if special:
-                                if ice(player1,special,player2) == None :
+                                if ice(player1, special, player2) == None:
                                     special = None
-                                if hypnosis(player1,special,player2) == None :
+                                if hypnosis(player1, special, player2) == None:
                                     special = None
-                                if ammu(player1,special) == None :
+                                if ammu(player1, special) == None:
                                     special = None
                 if not player2.freezed:
                     if event.key == pygame.K_w:
@@ -269,20 +330,20 @@ def game_loop():
                     if event.key == pygame.K_TAB:
                         pygame.mixer.music.load("bishor.mp3")
                         pygame.mixer.music.play()
-                        if player2.bullets > 0 :
+                        if player2.bullets > 0:
                             q = copy.deepcopy(player2.positions)
-                            qq = [q[0] + 20 , q[1] + 20]
+                            qq = [q[0] + 20, q[1] + 20]
                             player2.points.append(qq)
-                            shooting(player2, poppet1 , player1)
-                            shooting(player2, poppet2 , player1)
-                            shooting(player2, poppet3 , player1)
+                            shooting(player2, poppet1, player1)
+                            shooting(player2, poppet2, player1)
+                            shooting(player2, poppet3, player1)
                             player2.bullets -= 1
                             if special:
-                                if ice(player2,special,player1) == None :
+                                if ice(player2, special, player1) == None:
                                     special = None
-                                if hypnosis(player2,special,player1) == None :
+                                if hypnosis(player2, special, player1) == None:
                                     special = None
-                                if ammu(player2,special) == None :
+                                if ammu(player2, special) == None:
                                     special = None
                      
 
@@ -311,7 +372,7 @@ def game_loop():
 
         game_time = time.time()  
 
-        if 300 < (game_time - game_start_time) < 300.01 :
+        if 300 < (game_time - game_start_time) < 300.01:
             running = False
 
         time_text = small_font.render(f"{int(300 - (game_time - game_start_time))}", True, (0, 0, 0))
